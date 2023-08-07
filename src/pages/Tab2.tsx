@@ -48,7 +48,7 @@ const Tab2: React.FC = () => {
             role: "cancel",
           },
         ]}
-        onDidDismiss={() => undefined}
+        onDidDismiss={() => setPhotoToDelete(undefined)}
       />
       <IonContent fullscreen>
         <IonContent>
