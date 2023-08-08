@@ -10,6 +10,7 @@ import {
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Preferences } from "@capacitor/preferences";
 import { Capacitor } from "@capacitor/core";
+import { base64FromPath } from "./converterBase64";
 
 export interface UserPhoto {
   filepath: string;
@@ -18,9 +19,22 @@ export interface UserPhoto {
 
 const PHOTO_STORAGE = "photos";
 
+/**
+ * Initializes a photo gallery hook.
+ *
+ * @return {Object} An object containing the following properties:
+ *   - `photos`: An array of UserPhoto objects representing the photos in the gallery.
+ *   - `takePhoto`: A function that allows the user to take a photo and add it to the gallery.
+ *   - `deletePhoto`: A function that allows the user to delete a photo from the gallery.
+ */
 export function usePhotoGallery() {
   const [photos, setPhotos] = useState<UserPhoto[]>([]);
 
+  /**
+   * Loads the saved user photos from preferences and sets them in the state.
+   *
+   * @return {Promise<void>} A promise that resolves when the saved photos have been loaded and set in the state.
+   */
   useEffect(() => {
     const loadSaved = async () => {
       const { value } = await Preferences.get({ key: PHOTO_STORAGE });
@@ -45,6 +59,11 @@ export function usePhotoGallery() {
     loadSaved();
   }, []);
 
+  /**
+   * Takes a photo using the camera and saves it.
+   *
+   * @return {Promise<void>} A promise that resolves when the photo is taken and saved.
+   */
   const takePhoto = async () => {
     const photo = await Camera.getPhoto({
       resultType: CameraResultType.Uri,
@@ -58,6 +77,13 @@ export function usePhotoGallery() {
     Preferences.set({ key: PHOTO_STORAGE, value: JSON.stringify(newPhotos) });
   };
 
+  /**
+   * Save a picture.
+   *
+   * @param {Photo} photo - The photo to save.
+   * @param {string} fileName - The name of the saved file.
+   * @return {Promise<UserPhoto>} The saved user photo.
+   */
   const savePicture = async (
     photo: Photo,
     fileName: string
@@ -95,6 +121,12 @@ export function usePhotoGallery() {
     }
   };
 
+  /**
+   * Deletes a photo from the user's collection.
+   *
+   * @param {UserPhoto} photo - The photo object to be deleted.
+   * @return {Promise<void>} A promise that resolves when the photo is successfully deleted.
+   */
   const deletePhoto = async (photo: UserPhoto) => {
     // Remove this photo from the Photos reference data array
     const newPhotos = photos.filter((p) => p.filepath !== photo.filepath);
@@ -116,21 +148,4 @@ export function usePhotoGallery() {
     takePhoto,
     deletePhoto,
   };
-}
-
-export async function base64FromPath(path: string): Promise<string> {
-  const response = await fetch(path);
-  const blob = await response.blob();
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = reject;
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        resolve(reader.result);
-      } else {
-        reject("method did not return a string");
-      }
-    };
-    reader.readAsDataURL(blob);
-  });
 }

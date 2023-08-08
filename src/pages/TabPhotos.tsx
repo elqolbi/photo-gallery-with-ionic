@@ -18,9 +18,29 @@ import "./Tab2.css";
 import { UserPhoto, usePhotoGallery } from "../hooks/usePhotoGallery";
 import { useState } from "react";
 
-const Tab2: React.FC = () => {
+const TabPhotos: React.FC = () => {
   const { photos, takePhoto, deletePhoto } = usePhotoGallery();
   const [photoToDelete, setPhotoToDelete] = useState<UserPhoto>();
+
+  const photoActionSheetConfig = [
+    {
+      text: "Delete",
+      role: "destructive",
+      icon: trash,
+      handler: () => {
+        if (photoToDelete) {
+          deletePhoto(photoToDelete);
+          setPhotoToDelete(undefined);
+        }
+      },
+    },
+    {
+      text: "Cancel",
+      icon: close,
+      role: "cancel",
+    },
+  ];
+
   return (
     <IonPage>
       <IonHeader>
@@ -30,24 +50,7 @@ const Tab2: React.FC = () => {
       </IonHeader>
       <IonActionSheet
         isOpen={!!photoToDelete}
-        buttons={[
-          {
-            text: "Delete",
-            role: "destructive",
-            icon: trash,
-            handler: () => {
-              if (photoToDelete) {
-                deletePhoto(photoToDelete);
-                setPhotoToDelete(undefined);
-              }
-            },
-          },
-          {
-            text: "Cancel",
-            icon: close,
-            role: "cancel",
-          },
-        ]}
+        buttons={photoActionSheetConfig}
         onDidDismiss={() => setPhotoToDelete(undefined)}
       />
       <IonContent fullscreen>
@@ -75,4 +78,4 @@ const Tab2: React.FC = () => {
   );
 };
 
-export default Tab2;
+export default TabPhotos;
